@@ -3,11 +3,11 @@ import os
 from django.core.files.storage import FileSystemStorage
 from django.shortcuts import render
 from django.views.generic import TemplateView
-import html2text
 import re
 from wordcloud import WordCloud, STOPWORDS
 from PIL import Image
 import numpy as np
+from tika import parser
 
 # Create your views here.
 from mysite.models import Words
@@ -40,36 +40,30 @@ def upload(request):
         name = fs.save(filename, uploaded_file)
         print(name)
 
-        html_name = os.path.splitext(name)[0] + ".html"
-        os.system("hwp5html media\{0} --output=media\{1} --html".format(name, html_name))
-        context['url'] = fs.url(name)
-        file_path = os.path.join('media', html_name)
-        process_result = process_file(file_path)
+        process_result = process_file(name)
         context['created_words'] = process_result['created']
         context['updated_words'] = process_result['updated']
         context['result'] = 1
     return render(request, 'upload.html', context)
 
 
-def process_file(file):
+def process_file(filename):
     # Ignore converting links from HTML
     result = {'created': 0,
               'updated': 0}
-    with open(file, 'r', encoding='UTF-8', newline='') as f:
-        data = f.read().replace('\n', '')
-        text = html2text.html2text(data)
-        words_array = re.findall('\\w+', text)
-        for word_item in words_array:
-            new_word, created = Words.objects.get_or_create(word=word_item)
-            if created:
-                result['created'] += 1
-                new_word.save()
-            else:
-                result['updated'] += 1
-                new_word.counter += 1
-                new_word.save()
+    parsed = parser.from_file('./media/' + filename)
+    words_array = re.findall('\\w+', parsed["content"].replace('\n', ' '))
+    print(words_array)
+    for word_item in words_array:
+        new_word, created = Words.objects.get_or_create(word=word_item)
+        if created:
+            result['created'] += 1
+            new_word.save()
+        else:
+            result['updated'] += 1
+            new_word.counter += 1
+            new_word.save()
 
-    os.remove(file)
     return result
 
 
