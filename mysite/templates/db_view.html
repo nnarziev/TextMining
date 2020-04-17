@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>DB view</h2>
+    <!--<form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <button type="submit">Filter</button>
+    </form>-->
+    <br>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="filter">
+            <select id="filter" onchange="changeFilterSelection()">
+                <option value="year">Year</option>
+                <option value="month">Month</option>
+            </select>
+            <select id="filter-month">
+                <option value="1">Jan</option>
+                <option value="2">Feb</option>
+                <option value="3">Mar</option>
+                <option value="4">Apr</option>
+                <option value="5">May</option>
+                <option value="6">Jun</option>
+                <option value="7">Jul</option>
+                <option value="8">Aug</option>
+                <option value="9">Sep</option>
+                <option value="10">Oct</option>
+                <option value="11">Nov</option>
+                <option value="12">Dec</option>
+            </select>
+            <select id="filter-year">
+                <option value="1">2015</option>
+                <option value="2">2016</option>
+                <option value="3">2017</option>
+                <option value="4">2018</option>
+                <option value="5">2019</option>
+                <option value="6">2020</option>
+            </select>
+            <button type="submit" id="apply-filter-btn">Apply</button>
+        </div>
+    </form>
+    <table id="db_table">
+        <tr>
+            <th>Word</th>
+            <th>Counter</th>
+        </tr>
+        {% for word in words %}
+            <tr>
+                <td>{{ word.word }}</td>
+                <td>{{ word.counter }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

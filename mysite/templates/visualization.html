@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Visualization</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="filter">
+            <select id="filter" onchange="changeFilterSelection()">
+                <option value="year">Year</option>
+                <option value="month" selected>Month</option>
+            </select>
+            <select id="filter-month">
+                <option value="1">Jan</option>
+                <option value="2">Feb</option>
+                <option value="3">Mar</option>
+                <option value="4">Apr</option>
+                <option value="5">May</option>
+                <option value="6">Jun</option>
+                <option value="7">Jul</option>
+                <option value="8">Aug</option>
+                <option value="9">Sep</option>
+                <option value="10">Oct</option>
+                <option value="11">Nov</option>
+                <option value="12">Dec</option>
+            </select>
+            <select id="filter-year">
+                <option value="2015">2015</option>
+                <option value="2016">2016</option>
+                <option value="2017">2017</option>
+                <option value="2018">2018</option>
+                <option value="2019">2019</option>
+                <option value="2020">2020</option>
+            </select>
+            <button type="submit" id="apply-filter-btn">Apply</button>
+        </div>
+    </form>
+    <br>
+    <div id="chart-container">
+        <p class="center center-align"> - - - Trend - - - </p>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+        <canvas id="trend" width="400" height="200"></canvas>
+        <script>
+            var data = {{ chart_data|safe }};
+
+        </script>
+    </div>
+    <br>
+    <div id="wordcloud-container">
+        <p class="center center-align"> - - - Word Cloud - - - </p>
+        <img class="center" id="wordcloud" src="/media/tmp_wordcloud/wc.png">
+    </div>
+{% endblock %}

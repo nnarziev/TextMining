@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Upload</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="document">
+        <button type="submit">Upload file</button>
+    </form>
+    <br>
+    {% if result == 1 %}
+        <p>Number of newly uploaded words: {{ created_words }}</p>
+        <p>Number of updated words: {{ updated_words }}</p>
+    {% elif result == 0 %}
+        <script>alert("Please, choose the file first!")</script>
+    {% elif result == -1 %}
+        <script>alert("This file has already been uploaded!")</script>
+    {% endif %}
+{% endblock %}
