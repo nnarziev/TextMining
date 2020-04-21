@@ -1,0 +1,56 @@
+{% csrf_token %}
+<div class="filter">
+    <label for="filter-year-start">Start: </label>
+    <select id="filter-year-start" name="year_start">
+        <option value="2010">2010</option>
+        <option value="2011">2011</option>
+        <option value="2012">2012</option>
+        <option value="2013">2013</option>
+        <option value="2014">2014</option>
+        <option value="2015">2015</option>
+        <option value="2016">2016</option>
+        <option value="2017">2017</option>
+        <option value="2018">2018</option>
+        <option value="2019">2019</option>
+        <option value="2020">2020</option>
+        <option value="2021">2021</option>
+        <option value="2022">2022</option>
+        <option value="2023">2023</option>
+        <option value="2024">2024</option>
+        <option value="2025">2025</option>
+    </select>
+    <label for="filter-year-end">End: </label>
+    <select id="filter-year-end" name="year_end">
+        <option value="2010">2010</option>
+        <option value="2011">2011</option>
+        <option value="2012">2012</option>
+        <option value="2013">2013</option>
+        <option value="2014">2014</option>
+        <option value="2015">2015</option>
+        <option value="2016">2016</option>
+        <option value="2017">2017</option>
+        <option value="2018">2018</option>
+        <option value="2019">2019</option>
+        <option value="2020">2020</option>
+        <option value="2021">2021</option>
+        <option value="2022">2022</option>
+        <option value="2023">2023</option>
+        <option value="2024">2024</option>
+        <option value="2025">2025</option>
+    </select>
+</div>
+<script>
+    document.getElementById("filter-year-start").onchange = function () {
+        localStorage.setItem('sel_item_start', document.getElementById("filter-year-start").value);
+    };
+    document.getElementById("filter-year-end").onchange = function () {
+        localStorage.setItem('sel_item_end', document.getElementById("filter-year-end").value);
+    };
+
+    if (localStorage.getItem('sel_item_start')) {
+        document.getElementById("filter-year-start").value = localStorage.getItem('sel_item_start');
+    }
+    if (localStorage.getItem('sel_item_end')) {
+        document.getElementById("filter-year-end").value = localStorage.getItem('sel_item_end');
+    }
+</script>

@@ -169,18 +169,13 @@ def visualize(request):
 
         word_freq = {}
 
-        year_start = 2010
-        year_end = 2027
+        year_start = int(request.POST['year_start'])
+        year_end = int(request.POST['year_end'])
         top5_words_for_sel_year = Words.objects.filter(year=year).order_by('-count')[:5]
         words = []
         final_data = []
         for word in top5_words_for_sel_year:
-            print(word.text)
             words.append(Words.objects.filter(text=word.text, year__range=[year_start, year_end]).order_by('year'))
-
-        for w in words:
-            for a in w:
-                print(a.text + " " + str(a.year) + " " + str(a.count))
 
         dif_years = False
         for w in words:
