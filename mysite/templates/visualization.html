@@ -2,23 +2,10 @@
 
 {% block content %}
     <h2>Visualization</h2>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="filter">
-            <select id="filter-year">
-                <option value="2015">2015</option>
-                <option value="2016">2016</option>
-                <option value="2017">2017</option>
-                <option value="2018">2018</option>
-                <option value="2019">2019</option>
-                <option value="2020">2020</option>
-            </select>
-            <button type="submit" id="apply-filter-btn">Apply</button>
-        </div>
-    </form>
+    {% include 'filter.html' %}
     <br>
     <div id="chart-container">
-        <p class="center center-align"> - - - Trend - - - </p>
+        <h4 class="center center-align"> - - - Trend - - - </h4>
         <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
         <canvas id="trend" width="400" height="200"></canvas>
         <script>
@@ -27,7 +14,12 @@
     </div>
     <br>
     <div id="wordcloud-container">
-        <p class="center center-align"> - - - Word Cloud - - - </p>
-        <img class="center" id="wordcloud" src="/media/tmp_wordcloud/wc.png">
+        <h4 class="center center-align"> - - - Word Cloud - - - </h4>
+        {% if wc_data == 1 %}
+            <img class="center" id="wordcloud" src="/media/tmp_wordcloud/wc.png">
+        {% else %}
+            <h5 class="center center-align"> No data </h5>
+        {% endif %}
     </div>
+
 {% endblock %}
