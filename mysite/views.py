@@ -165,14 +165,16 @@ def visualize(request):
 
         context = {}
 
-        #region Prepare data for Chart
+        # region Prepare data for Chart
         year_start = int(request.POST['year_start'])
         year_end = int(request.POST['year_end'])
+        print(year_start, " ", year_end)
         top5_words_for_sel_year = Words.objects.filter(year=year).order_by('-count')[:5]
+        top5_collocations_for_sel_year = Bigrams.objects.filter(year=year).order_by('-count')[:5]
 
         if not top5_words_for_sel_year.__len__() == 0:
             words = []
-            final_data = []
+            context['word_chart_data'] = []
             for word in top5_words_for_sel_year:
                 words.append(Words.objects.filter(text=word.text, year__range=[year_start, year_end]).order_by('year'))
 
@@ -208,12 +210,55 @@ def visualize(request):
                         yr = counter_year
                         cnt = 0
 
-                    final_data.append({"text": txt, "year": yr, "count": cnt})
+                    context['word_chart_data'].append({"text": txt, "year": yr, "count": cnt})
                     counter_year += 1
 
-            context['chart_data'] = final_data
-            context['is_chart_data_exists'] = 1
-        #endregion
+            context['is_word_chart_data_exists'] = 1
+
+        if not top5_collocations_for_sel_year.__len__() == 0:
+            collocations = []
+            context['collocation_chart_data'] = []
+            for collocation in top5_collocations_for_sel_year:
+                collocations.append(Bigrams.objects.filter(text=collocation.text, year__range=[year_start, year_end]).order_by('year'))
+
+            dif_years = False
+            for c in collocations:
+                counter_year = year_start
+                counter_collocations = 0
+                for i in range(0, (year_end - year_start) + 1):
+                    if counter_year > year_end:
+                        break
+
+                    if counter_collocations < len(c):
+                        if c[counter_collocations].year == counter_year:
+                            # final_data.append({"text": w[counter_words].text, "year": w[counter_words].year, "count": w[counter_words].count})
+                            txt = c[counter_collocations].text
+                            yr = c[counter_collocations].year
+                            cnt = c[counter_collocations].count
+
+                            if not dif_years:
+                                counter_collocations = i + 1
+                            else:
+                                counter_collocations = counter_collocations + 1
+                            # dif_years = False
+                        else:
+                            dif_years = True
+                            # final_data.append({"text": w[counter_words].text, "year": counter_year, "count": 0})
+                            txt = c[counter_collocations].text
+                            yr = counter_year
+                            cnt = 0
+                    else:
+                        # final_data.append({"text": w[counter_words].text, "year": counter_year, "count": 0})
+                        print(counter_collocations)
+                        txt = c[counter_collocations - 1].text
+                        yr = counter_year
+                        cnt = 0
+
+                    context['collocation_chart_data'].append({"text": txt, "year": yr, "count": cnt})
+                    counter_year += 1
+
+            context['is_collocation_chart_data_exists'] = 1
+        # endregion
 
         # region Draw Word Cloud
         word_freq = {}

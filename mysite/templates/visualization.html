@@ -5,13 +5,25 @@
     <form method="post" enctype="multipart/form-data" id="myForm">
         {% include 'filter.html' %}
         <br>
-        <div id="chart-container">
+        <div class="chart-container">
             <h4 class="center center-align"> - - - Top 5 Word Trend - - - </h4>
             {% include 'chart_period_filter.html' %}
-            {% if is_chart_data_exists == 1 %}
-                <canvas id="trend" width="400" height="200"></canvas>
+            {% if is_word_chart_data_exists == 1 %}
+                <canvas id="word_trend" width="400" height="200"></canvas>
                 <script>
-                    var data = {{ chart_data|safe }};
+                    var word_data = {{ word_chart_data|safe }};
+                </script>
+            {% else %}
+                <h5 class="center center-align"> No data </h5>
+            {% endif %}
+        </div>
+        <br>
+        <div class="chart-container">
+            <h4 class="center center-align"> - - - Top 5 Collocations - - - </h4>
+            {% if is_collocation_chart_data_exists == 1 %}
+                <canvas id="collocation_trend" width="400" height="200"></canvas>
+                <script>
+                    var collocation_data = {{ collocation_chart_data|safe }};
                 </script>
             {% else %}
                 <h5 class="center center-align"> No data </h5>
