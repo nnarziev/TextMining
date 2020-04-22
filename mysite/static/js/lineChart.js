@@ -19,12 +19,11 @@ for (var i = 0; i < 5; i++) {
     var word_label = word_data[i * xAxisData.length].text;
     var collocation_label = collocation_data[i * xAxisData.length].text;
     for (var x = 0; x < xAxisData.length; x++) {
-        word_points.push({x: word_data[i * xAxisData.length + x].year, y: word_data[x].count});
+        word_points.push({x: word_data[i * xAxisData.length + x].year, y: word_data[i * xAxisData.length + x].count});
     }
 
     for (var y = 0; y < xAxisData.length; y++) {
-        console.log(i * xAxisData.length + y);
-        collocation_points.push({x: collocation_data[i * xAxisData.length + y].year, y: collocation_data[y].count});
+        collocation_points.push({x: collocation_data[i * xAxisData.length + y].year, y: collocation_data[i * xAxisData.length + y].count});
     }
 
     word_dataset.push(

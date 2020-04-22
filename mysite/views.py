@@ -42,19 +42,19 @@ def upload(request):
 
         name = fs.save(filename, uploaded_file)
 
-        process_result = process_file(name)
+        year = int(request.POST['year'])
+        process_result = process_file(name, year)
         context['created_words'] = process_result['created']
         context['updated_words'] = process_result['updated']
         context['result'] = 1
     return render(request, 'upload.html', context)
 
 
-def process_file(filename):
-    # Ignore converting links from HTML
-    reg_exp_date = re.compile(r'([12]\d{3}\.(0[1-9]|1[0-2])\.(0[1-9]|[12]\d|3[01]))')
-    year = 0
-    if reg_exp_date.search(filename):
-        year = int(reg_exp_date.search(filename).group().split('.')[0])
+def process_file(filename, year):
+    # reg_exp_date = re.compile(r'([12]\d{3}\.(0[1-9]|1[0-2])\.(0[1-9]|[12]\d|3[01]))')
+    # year = 0
+    # if reg_exp_date.search(filename):
+    #     year = int(reg_exp_date.search(filename).group().split('.')[0])
 
     parsed = parser.from_file('./media/' + filename)
     nltk_function(parsed["content"], year)
