@@ -163,66 +163,62 @@ def visualize(request):
         year = request.POST['year']
         wc_dir = 'media/tmp_wordcloud'
 
-        word_cloud_count = 100
-        chart_data_count = 5
-        chart_years_count = 12
+        context = {}
 
-        word_freq = {}
-
+        #region Prepare data for Chart
         year_start = int(request.POST['year_start'])
         year_end = int(request.POST['year_end'])
         top5_words_for_sel_year = Words.objects.filter(year=year).order_by('-count')[:5]
-        words = []
-        final_data = []
-        for word in top5_words_for_sel_year:
-            words.append(Words.objects.filter(text=word.text, year__range=[year_start, year_end]).order_by('year'))
 
-        dif_years = False
-        for w in words:
-            counter_year = year_start
-            counter_words = 0
-            for i in range(0, (year_end - year_start) + 1):
-                if counter_year > year_end:
-                    break
+        if not top5_words_for_sel_year.__len__() == 0:
+            words = []
+            final_data = []
+            for word in top5_words_for_sel_year:
+                words.append(Words.objects.filter(text=word.text, year__range=[year_start, year_end]).order_by('year'))
 
-                if counter_words < len(w):
-                    if w[counter_words].year == counter_year:
-                        # final_data.append({"text": w[counter_words].text, "year": w[counter_words].year, "count": w[counter_words].count})
-                        txt = w[counter_words].text
-                        yr = w[counter_words].year
-                        cnt = w[counter_words].count
+            dif_years = False
+            for w in words:
+                counter_year = year_start
+                counter_words = 0
+                for i in range(0, (year_end - year_start) + 1):
+                    if counter_year > year_end:
+                        break
 
-                        if not dif_years:
-                            counter_words = i + 1
+                    if counter_words < len(w):
+                        if w[counter_words].year == counter_year:
+                            # final_data.append({"text": w[counter_words].text, "year": w[counter_words].year, "count": w[counter_words].count})
+                            txt = w[counter_words].text
+                            yr = w[counter_words].year
+                            cnt = w[counter_words].count
+
+                            if not dif_years:
+                                counter_words = i + 1
+                            else:
+                                counter_words = counter_words + 1
+                            # dif_years = False
                         else:
-                            counter_words = counter_words + 1
-                        # dif_years = False
+                            dif_years = True
+                            # final_data.append({"text": w[counter_words].text, "year": counter_year, "count": 0})
+                            txt = w[counter_words].text
+                            yr = counter_year
+                            cnt = 0
                     else:
-                        dif_years = True
                         # final_data.append({"text": w[counter_words].text, "year": counter_year, "count": 0})
-                        txt = w[counter_words].text
+                        txt = w[counter_words - 1].text
                         yr = counter_year
                         cnt = 0
-                else:
-                    # final_data.append({"text": w[counter_words].text, "year": counter_year, "count": 0})
-                    txt = w[counter_words - 1].text
-                    yr = counter_year
-                    cnt = 0
 
-                final_data.append({"text": txt, "year": yr, "count": cnt})
-                counter_year += 1
+                    final_data.append({"text": txt, "year": yr, "count": cnt})
+                    counter_year += 1
 
-        print(final_data)
-        data_years = Words.objects.filter(year__range=[int(year) - chart_years_count + 1, int(year)]).values_list('year', flat=True).distinct()
-        data_years = sorted(data_years)
-        data_years_count = data_years.__len__()
-        print(data_years_count)
+            context['chart_data'] = final_data
+            context['is_chart_data_exists'] = 1
+        #endregion
 
-        chart_data = Words.objects.all().filter(year__range=[int(year) - chart_years_count + 1, int(year)]).order_by('-count', 'text', 'year').values('text', 'count', 'year')[:chart_data_count * data_years_count]
+        # region Draw Word Cloud
+        word_freq = {}
+        word_cloud_count = 100
         wc_data = Words.objects.all().filter(year=year).order_by('-count').values('text', 'count', 'year')[:word_cloud_count]
-
-        if chart_data.__len__() == 0:
-            return render(request, 'no_data.html')
 
         for item in wc_data:
             word_freq[item['text']] = item['count']
@@ -233,11 +229,12 @@ def visualize(request):
                        max_words=word_cloud_count,
                        stopwords=stopwords)
 
-        context = {}
         if not word_freq.__len__() == 0:
             wc.generate_from_frequencies(word_freq)
             wc.to_file(os.path.join(wc_dir, 'wc.png'))
-            context['wc_data'] = 1
-        context['chart_data'] = chart_data[:]
+            context['is_wc_data_exits'] = 1  # shows that data for word cloud exists
+
+        # endregion
+
         context['result'] = 1
         return render(request, 'visualization.html', context)

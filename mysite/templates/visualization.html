@@ -8,16 +8,19 @@
         <div id="chart-container">
             <h4 class="center center-align"> - - - Top 5 Word Trend - - - </h4>
             {% include 'chart_period_filter.html' %}
-            <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
-            <canvas id="trend" width="400" height="200"></canvas>
-            <script>
-                var data = {{ chart_data|safe }};
-            </script>
+            {% if is_chart_data_exists == 1 %}
+                <canvas id="trend" width="400" height="200"></canvas>
+                <script>
+                    var data = {{ chart_data|safe }};
+                </script>
+            {% else %}
+                <h5 class="center center-align"> No data </h5>
+            {% endif %}
         </div>
         <br>
         <div id="wordcloud-container">
             <h4 class="center center-align"> - - - Word Cloud - - - </h4>
-            {% if wc_data == 1 %}
+            {% if is_wc_data_exits == 1 %}
                 <img class="center" id="wordcloud" src="/media/tmp_wordcloud/wc.png">
             {% else %}
                 <h5 class="center center-align"> No data </h5>
