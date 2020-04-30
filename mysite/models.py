@@ -11,6 +11,11 @@ class Words(models.Model):
         unique_together = (('text', 'year'),)
 
 
+class WordsSimilarity(models.Model):
+    text = models.CharField(max_length=50, primary_key=True)
+    embedding = models.BinaryField()
+
+
 class Bigrams(models.Model):
     text = models.TextField()
     year = models.IntegerField(default=0)

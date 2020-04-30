@@ -7,7 +7,9 @@
         <button type="submit">Filter</button>
     </form>-->
     <br>
-    {% include 'filter.html' %}
+    <form method="post" enctype="multipart/form-data">
+        {% include 'filter.html' %}
+    </form>
     <table id="db_table">
         <tr>
             <th>Word</th>
