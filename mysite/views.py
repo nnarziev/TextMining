@@ -55,7 +55,6 @@ def db_view(request):
 
 def visualize(request):
     if request.method == 'GET':
-        kmeans_clustering()
         return render(request, 'visualization.html')
     if request.method == 'POST':
         if not request.POST:
@@ -73,90 +72,16 @@ def visualize(request):
         top5_collocations_for_sel_year = Collocations.objects.filter(year=year).order_by('-count')[:5]
 
         if not top5_words_for_sel_year.__len__() == 0:
-            words = []
-            context['word_chart_data'] = []
-            for word in top5_words_for_sel_year:
-                words.append(Words.objects.filter(text=word.text, year__range=[year_start, year_end]).order_by('year'))
-
-            dif_years = False
-            for w in words:
-                counter_year = year_start
-                counter_words = 0
-                for i in range(0, (year_end - year_start) + 1):
-                    if counter_year > year_end:
-                        break
-
-                    if counter_words < len(w):
-                        if w[counter_words].year == counter_year:
-                            # final_data.append({"text": w[counter_words].text, "year": w[counter_words].year, "count": w[counter_words].count})
-                            txt = w[counter_words].text
-                            yr = w[counter_words].year
-                            cnt = w[counter_words].count
-
-                            if not dif_years:
-                                counter_words = i + 1
-                            else:
-                                counter_words = counter_words + 1
-                            # dif_years = False
-                        else:
-                            dif_years = True
-                            # final_data.append({"text": w[counter_words].text, "year": counter_year, "count": 0})
-                            txt = w[counter_words].text
-                            yr = counter_year
-                            cnt = 0
-                    else:
-                        # final_data.append({"text": w[counter_words].text, "year": counter_year, "count": 0})
-                        txt = w[counter_words - 1].text
-                        yr = counter_year
-                        cnt = 0
-
-                    context['word_chart_data'].append({"text": txt, "year": yr, "count": cnt})
-                    counter_year += 1
-
-            context['is_word_chart_data_exists'] = 1
+            # get data for words chart data
+            res = get_words_chart_data(top5_words_for_sel_year, year_start, year_end)
+            context['word_chart_data'] = res['word_chart_data']
+            context['is_word_chart_data_exists'] = res['is_word_chart_data_exists']
 
         if not top5_collocations_for_sel_year.__len__() == 0:
-            collocations = []
-            context['collocation_chart_data'] = []
-            for collocation in top5_collocations_for_sel_year:
-                collocations.append(Collocations.objects.filter(text=collocation.text, year__range=[year_start, year_end]).order_by('year'))
-
-            dif_years = False
-            for c in collocations:
-                counter_year = year_start
-                counter_collocations = 0
-                for i in range(0, (year_end - year_start) + 1):
-                    if counter_year > year_end:
-                        break
-
-                    if counter_collocations < len(c):
-                        if c[counter_collocations].year == counter_year:
-                            # final_data.append({"text": w[counter_words].text, "year": w[counter_words].year, "count": w[counter_words].count})
-                            txt = c[counter_collocations].text
-                            yr = c[counter_collocations].year
-                            cnt = c[counter_collocations].count
-
-                            if not dif_years:
-                                counter_collocations = i + 1
-                            else:
-                                counter_collocations = counter_collocations + 1
-                            # dif_years = False
-                        else:
-                            dif_years = True
-                            # final_data.append({"text": w[counter_words].text, "year": counter_year, "count": 0})
-                            txt = c[counter_collocations].text
-                            yr = counter_year
-                            cnt = 0
-                    else:
-                        # final_data.append({"text": w[counter_words].text, "year": counter_year, "count": 0})
-                        txt = c[counter_collocations - 1].text
-                        yr = counter_year
-                        cnt = 0
-
-                    context['collocation_chart_data'].append({"text": txt, "year": yr, "count": cnt})
-                    counter_year += 1
-
-            context['is_collocation_chart_data_exists'] = 1
+            # get data for collocations chart data
+            res = get_collocations_chart_data(top5_collocations_for_sel_year, year_start, year_end)
+            context['collocation_chart_data'] = res['collocation_chart_data']
+            context['is_collocation_chart_data_exists'] = res['is_collocation_chart_data_exists']
         # endregion
 
         # region Draw Word Cloud
@@ -180,8 +105,108 @@ def visualize(request):
 
         # endregion
 
+        # region Prepare data for topic
+        words = Collocations.objects.filter(year=year)
+        if not words.__len__() == 0:
+            context['topics_data'] = kmeans_clustering(words)
+            print(context['topics_data'])
+        # endregion
+
         context['result'] = 1
         return render(request, 'visualization.html', context)
+
+
+def get_words_chart_data(top5_words_for_sel_year, year_start, year_end):
+    words = []
+    result = {}
+    result['word_chart_data'] = []
+    for word in top5_words_for_sel_year:
+        words.append(Words.objects.filter(text=word.text, year__range=[year_start, year_end]).order_by('year'))
+
+    dif_years = False
+    for w in words:
+        counter_year = year_start
+        counter_words = 0
+        for i in range(0, (year_end - year_start) + 1):
+            if counter_year > year_end:
+                break
+
+            if counter_words < len(w):
+                if w[counter_words].year == counter_year:
+                    # final_data.append({"text": w[counter_words].text, "year": w[counter_words].year, "count": w[counter_words].count})
+                    txt = w[counter_words].text
+                    yr = w[counter_words].year
+                    cnt = w[counter_words].count
+
+                    if not dif_years:
+                        counter_words = i + 1
+                    else:
+                        counter_words = counter_words + 1
+                    # dif_years = False
+                else:
+                    dif_years = True
+                    # final_data.append({"text": w[counter_words].text, "year": counter_year, "count": 0})
+                    txt = w[counter_words].text
+                    yr = counter_year
+                    cnt = 0
+            else:
+                # final_data.append({"text": w[counter_words].text, "year": counter_year, "count": 0})
+                txt = w[counter_words - 1].text
+                yr = counter_year
+                cnt = 0
+
+            result['word_chart_data'].append({"text": txt, "year": yr, "count": cnt})
+            counter_year += 1
+
+    result['is_word_chart_data_exists'] = 1
+    return result
+
+
+def get_collocations_chart_data(top5_collocations_for_sel_year, year_start, year_end):
+    result = {}
+    collocations = []
+    result['collocation_chart_data'] = []
+    for collocation in top5_collocations_for_sel_year:
+        collocations.append(Collocations.objects.filter(text=collocation.text, year__range=[year_start, year_end]).order_by('year'))
+
+    dif_years = False
+    for c in collocations:
+        counter_year = year_start
+        counter_collocations = 0
+        for i in range(0, (year_end - year_start) + 1):
+            if counter_year > year_end:
+                break
+
+            if counter_collocations < len(c):
+                if c[counter_collocations].year == counter_year:
+                    # final_data.append({"text": w[counter_words].text, "year": w[counter_words].year, "count": w[counter_words].count})
+                    txt = c[counter_collocations].text
+                    yr = c[counter_collocations].year
+                    cnt = c[counter_collocations].count
+
+                    if not dif_years:
+                        counter_collocations = i + 1
+                    else:
+                        counter_collocations = counter_collocations + 1
+                    # dif_years = False
+                else:
+                    dif_years = True
+                    # final_data.append({"text": w[counter_words].text, "year": counter_year, "count": 0})
+                    txt = c[counter_collocations].text
+                    yr = counter_year
+                    cnt = 0
+            else:
+                # final_data.append({"text": w[counter_words].text, "year": counter_year, "count": 0})
+                txt = c[counter_collocations - 1].text
+                yr = counter_year
+                cnt = 0
+
+            result['collocation_chart_data'].append({"text": txt, "year": yr, "count": cnt})
+            counter_year += 1
+
+    result['is_collocation_chart_data_exists'] = 1
+
+    return result
 
 
 def upload(request):
@@ -208,9 +233,7 @@ def upload(request):
         name = fs.save(filename, uploaded_file)
 
         year = int(request.POST['year'])
-        process_result = process_file(name, year)
-        context['created_words'] = process_result['created']
-        context['updated_words'] = process_result['updated']
+        process_file(name, year)
         context['result'] = 1
     return render(request, 'upload.html', context)
 
@@ -299,24 +322,31 @@ def save_similarities(corpus):
             np_array = pickle.loads(np_bytes)  # actual decoded array
 
 
-def kmeans_clustering():
+def kmeans_clustering(texts):
     num_of_clusters = 20
     words = []
     embeddings = []
-    similarities = Embeddings.objects.all()
-    for similarity in similarities:
-        words.append(similarity.text)
-        np_bytes = base64.b64decode(similarity.embedding)
-        embeddings.append(pickle.loads(np_bytes))
+    result = {}
+    for text in texts:
+        vector = Embeddings.objects.filter(text=text.text)
+        if not vector.__len__() == 0:
+            words.append(vector[0].text)
+            np_bytes = base64.b64decode(vector[0].embedding)
+            embeddings.append(pickle.loads(np_bytes))
+        else:
+            print("No data: " + text.text)
 
     clustering = KMeans(n_clusters=num_of_clusters)
+    if not embeddings.__len__() == 0:
+        clustering.fit(embeddings)
+        for i in range(0, num_of_clusters):
+            n_cluster_data = ClusterIndicesNumpy(clustNum=i, labels_array=clustering.labels_)
+            print("***** Cluster {} *******".format(i))
+            result[i] = []
+            for n in n_cluster_data:
+                result[i].append(words[n])
 
-    clustering.fit(embeddings)
-    for i in range(0, num_of_clusters):
-        n_cluster_data = ClusterIndicesNumpy(clustNum=i, labels_array=clustering.labels_)
-        print("***** Cluster {} *******".format(i))
-        for n in n_cluster_data:
-            print("{}".format(words[n]))
+    return result
 
 
 def ClusterIndicesNumpy(clustNum, labels_array):  # numpy

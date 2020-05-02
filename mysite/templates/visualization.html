@@ -12,6 +12,8 @@
                 <canvas id="word_trend" width="400" height="200"></canvas>
                 <script>
                     var word_data = {{ word_chart_data|safe }};
+                    var topic_data = {{topics_data|safe }};
+                    console.log(topic_data);
                 </script>
             {% else %}
                 <h5 class="center center-align"> No data </h5>

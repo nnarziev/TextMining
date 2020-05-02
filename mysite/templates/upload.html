@@ -37,8 +37,7 @@
     </form>
     <br>
     {% if result == 1 %}
-        <p>Number of newly uploaded words: {{ created_words }}</p>
-        <p>Number of updated words: {{ updated_words }}</p>
+        <p>Done!!!</p>
     {% elif result == 0 %}
         <script>alert("Please, choose the file first!")</script>
     {% elif result == -1 %}
