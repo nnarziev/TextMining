@@ -18,7 +18,7 @@ from django.conf.urls.static import static
 from django.urls import re_path, include
 
 urlpatterns = [
-    re_path(r'mysite/', include('mysite.urls')),
+    re_path(r'mysite/?', include('mysite.urls')),
 ]
 
 if settings.DEBUG:
