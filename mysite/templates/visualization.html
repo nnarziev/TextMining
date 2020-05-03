@@ -2,18 +2,20 @@
 
 {% block content %}
     <h2>Visualization</h2>
+    <p>* Please, chose a filter options and press 'Apply'</p>
     <form method="post" enctype="multipart/form-data" id="myForm">
-        {% include 'filter.html' %}
+        {% include 'filters/filter.html' %}
+        {% include 'filters/chart_period_filter.html' %}
+        {% include 'filters/topic_number_filter.html' %}
+        {% include 'filters/text_type_filter.html' %}
+        <button type="submit" id="apply-filter-btn">Apply</button>
         <br>
         <div class="chart-container">
             <h4 class="center center-align"> - - - Top 5 Word Trend - - - </h4>
-            {% include 'chart_period_filter.html' %}
             {% if is_word_chart_data_exists == 1 %}
                 <canvas id="word_trend" width="400" height="200"></canvas>
                 <script>
                     var word_data = {{ word_chart_data|safe }};
-                    var topic_data = {{topics_data|safe }};
-                    console.log(topic_data);
                 </script>
             {% else %}
                 <h5 class="center center-align"> No data </h5>
@@ -36,6 +38,32 @@
             <h4 class="center center-align"> - - - Word Cloud - - - </h4>
             {% if is_wc_data_exits == 1 %}
                 <img class="center" id="wordcloud" src="/media/tmp_wordcloud/wc.png">
+            {% else %}
+                <h5 class="center center-align"> No data </h5>
+            {% endif %}
+        </div>
+        <br>
+        <div id="topics-container">
+            <h4 class="center center-align"> - - - Topics - - - </h4>
+            {% if is_topics_data_exits == 1 %}
+                <script>
+                    var topic_data = {{topics_data|safe }};
+                    console.log(topic_data);
+                </script>
+                <table id="db_table">
+                    <tr>
+                        <th>Text</th>
+                        <th>Topic</th>
+                        <th>Year</th>
+                    </tr>
+                    {% for topic_data in topics_data %}
+                        <tr>
+                            <td>{{ topic_data.text }}</td>
+                            <td>{{ topic_data.topic }}</td>
+                            <td>{{ topic_data.year }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
             {% else %}
                 <h5 class="center center-align"> No data </h5>
             {% endif %}

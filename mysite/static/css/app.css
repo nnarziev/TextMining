@@ -46,11 +46,6 @@ table#db_table th {
     text-align: center;
 }
 
-.filter {
-    float: right;
-    margin-bottom: 15px;
-}
-
 #warning{
     color: crimson;
 }

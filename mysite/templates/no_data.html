@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h2>No data</h2>
-    {% include 'filter.html' %}
+    <form method="post" enctype="multipart/form-data">
+        <h2>No data</h2>
+        {% include 'filters/filter.html' %}
+        <button type="submit" id="apply-filter-btn">Apply</button>
+    </form>
 {% endblock %}

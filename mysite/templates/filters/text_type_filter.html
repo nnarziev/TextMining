@@ -1,0 +1,17 @@
+{% csrf_token %}
+<div class="filter">
+    <label for="filter-text-type">Choose: </label>
+    <select id="filter-text-type" name="text_type">
+        <option value="words">Words</option>
+        <option value="collocations">Collocations</option>
+    </select>
+</div>
+<script>
+    document.getElementById("filter-text-type").onchange = function () {
+        localStorage.setItem('sel_item_text_type', document.getElementById("filter-text-type").value);
+    };
+
+    if (localStorage.getItem('sel_item_text_type')) {
+        document.getElementById("filter-text-type").value = localStorage.getItem('sel_item_text_type');
+    }
+</script>

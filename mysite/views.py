@@ -41,9 +41,19 @@ def db_view(request):
         if not request.POST:
             return render(request, 'db_view.html')
 
+        unwanted_words = request.POST.getlist('checks[]')
         year = request.POST['year']
+        text_type = request.POST['text_type']
 
-        data = Words.objects.all().filter(year=year).order_by('-count').values('text', 'count', 'year')
+        print(unwanted_words)
+        if unwanted_words:
+            set_unwanted_words(unwanted_words, text_type)
+
+        if text_type == 'words':
+            data = Words.objects.all().filter(year=year).order_by('-count').values('text', 'count', 'year')
+        else:
+            data = Collocations.objects.all().filter(year=year).order_by('-count').values('text', 'count', 'year')
+
         if data.__len__() == 0:
             return render(request, 'no_data.html')
 
@@ -51,6 +61,17 @@ def db_view(request):
         context['words'] = data
         context['result'] = 1
         return render(request, 'db_view.html', context)
+
+
+def set_unwanted_words(words, text_type):
+    # adding unwanted word to stopwords_ko.txt and removing from DB
+    with open("stopwords_ko.txt", 'a+', encoding="UTF-8") as f:
+        for word in words:
+            f.write(word + "\n")
+            if text_type == 'words':
+                Words.objects.filter(text=word).delete()
+            else:
+                Collocations.objects.filter(text=word).delete()
 
 
 def visualize(request):
@@ -61,6 +82,8 @@ def visualize(request):
             return render(request, 'visualization.html')
 
         year = request.POST['year']
+        text_type = request.POST['text_type']
+        topic_num = int(request.POST['topic_num'])
         wc_dir = 'media/tmp_wordcloud'
 
         context = {}
@@ -106,10 +129,14 @@ def visualize(request):
         # endregion
 
         # region Prepare data for topic
-        words = Collocations.objects.filter(year=year)
-        if not words.__len__() == 0:
-            context['topics_data'] = kmeans_clustering(words)
-            print(context['topics_data'])
+        if text_type == 'words':
+            data = Words.objects.filter(year=year)
+        else:
+            data = Collocations.objects.filter(year=year)
+
+        if not data.__len__() == 0:
+            context['topics_data'] = kmeans_clustering(data, topic_num)['topics_data']
+            context['is_topics_data_exits'] = 1
         # endregion
 
         context['result'] = 1
@@ -252,9 +279,6 @@ def process_file(filename, year):
     print("2. Saving N-grams...")
     save_n_grams(pre_process(parsed["content"]), year, 2)
 
-    print("3. Saving embeddings based on similarities...")
-    save_similarities(pre_process(parsed["content"]))
-
     # konlpy_module(parsed["content"], year)
     # word2vec_function(parsed["content"].replace('\n', ' '))
 
@@ -269,6 +293,9 @@ def save_words(corpus, year):
         else:
             new_word.count += 1
             new_word.save()
+
+    print("1-2. Saving embeddings for words based on similarities...")
+    save_similarities(words_array)
 
 
 def save_n_grams(corpus, year, n):
@@ -288,8 +315,10 @@ def save_n_grams(corpus, year, n):
 
     ngrams = n_gram_finder.nbest(n_gram_measures.pmi, 50)  # find top 50 collocations from words
 
+    collocations_data = []
     for ngram in ngrams:
         new_ngram, created = Collocations.objects.get_or_create(text=" ".join(map(str, ngram)), year=year)
+        collocations_data.append(" ".join(map(str, ngram)))
         if created:
             new_ngram.count = 1
             new_ngram.save()
@@ -297,12 +326,14 @@ def save_n_grams(corpus, year, n):
             new_ngram.count += 1
             new_ngram.save()
 
+    print("2-2. Saving embeddings for n-grams based on similarities...")
+    save_similarities(collocations_data)
 
-def save_similarities(corpus):
+
+def save_similarities(tokens):
     tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')  # tokenize using Bert tokenizer
     model = BertModel.from_pretrained('bert-base-multilingual-cased')  # load Bert pre-trained model
 
-    tokens = nltk.word_tokenize(corpus)
     for token in tokens:
         # extract IDs for each word/collocation using Bert tokenizer
         input_ids = torch.tensor(tokenizer.encode(token)).unsqueeze(0)  # Batch size 1
@@ -322,29 +353,30 @@ def save_similarities(corpus):
             np_array = pickle.loads(np_bytes)  # actual decoded array
 
 
-def kmeans_clustering(texts):
-    num_of_clusters = 20
+def kmeans_clustering(texts, num_of_topic):
     words = []
+    years = []
     embeddings = []
     result = {}
+    result['topics_data'] = []
     for text in texts:
         vector = Embeddings.objects.filter(text=text.text)
         if not vector.__len__() == 0:
             words.append(vector[0].text)
+            years.append(text.year)
             np_bytes = base64.b64decode(vector[0].embedding)
             embeddings.append(pickle.loads(np_bytes))
         else:
             print("No data: " + text.text)
 
-    clustering = KMeans(n_clusters=num_of_clusters)
+    clustering = KMeans(n_clusters=num_of_topic)
     if not embeddings.__len__() == 0:
         clustering.fit(embeddings)
-        for i in range(0, num_of_clusters):
+        for i in range(0, num_of_topic):
             n_cluster_data = ClusterIndicesNumpy(clustNum=i, labels_array=clustering.labels_)
             print("***** Cluster {} *******".format(i))
-            result[i] = []
             for n in n_cluster_data:
-                result[i].append(words[n])
+                result['topics_data'].append({"topic": str(i + 1), "text": words[n], "year": years[n]})
 
     return result
 
