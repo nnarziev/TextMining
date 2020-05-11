@@ -24,7 +24,15 @@
             <option value="2024">2024</option>
             <option value="2025">2025</option>
         </select>
+        <button type="submit" id="btn_submit" onClick="submit_click()">Upload file</button>
+        <br>
+        <p id="done">Done!!!</p>
         <script>
+            function submit_click() {
+                var x = document.getElementById("done");
+                x.style.display = "none";
+            }
+
             document.getElementById("filter-year").onchange = function () {
                 localStorage.setItem('sel_item', document.getElementById("filter-year").value);
             };
@@ -33,14 +41,12 @@
                 document.getElementById("filter-year").value = localStorage.getItem('sel_item');
             }
         </script>
-        <button type="submit">Upload file</button>
+        {% if result == 1 %}
+            <script> document.getElementById("done").style.display = "block"; </script>
+        {% elif result == 0 %}
+            <script>alert("Please, choose the file first!");</script>
+        {% elif result == -1 %}
+            <script>alert("This file has already been uploaded!");</script>
+        {% endif %}
     </form>
-    <br>
-    {% if result == 1 %}
-        <p>Done!!!</p>
-    {% elif result == 0 %}
-        <script>alert("Please, choose the file first!")</script>
-    {% elif result == -1 %}
-        <script>alert("This file has already been uploaded!")</script>
-    {% endif %}
 {% endblock %}

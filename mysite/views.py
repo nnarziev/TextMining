@@ -128,6 +128,7 @@ def visualize(request):
 
         # endregion
 
+        print("here")
         # region Prepare data for topic
         if text_type == 'words':
             data = Words.objects.filter(year=year)
@@ -331,8 +332,8 @@ def save_n_grams(corpus, year, n):
 
 
 def save_similarities(tokens):
-    tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')  # tokenize using Bert tokenizer
-    model = BertModel.from_pretrained('bert-base-multilingual-cased')  # load Bert pre-trained model
+    tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-uncased')  # tokenize using Bert tokenizer
+    model = BertModel.from_pretrained('bert-base-multilingual-uncased')  # load Bert pre-trained model
 
     for token in tokens:
         # extract IDs for each word/collocation using Bert tokenizer
