@@ -240,45 +240,53 @@ def get_collocations_chart_data(top5_collocations_for_sel_year, year_start, year
 def upload(request):
     context = {}
     if request.method == 'POST':
-        if not request.FILES:
+        if not request.FILES and not request.POST["txt_input"]:
             context['result'] = 0
             return render(request, 'upload.html', context)
 
-        fs = FileSystemStorage()
-        uploaded_file = request.FILES['document']
-        files = os.listdir('media')
-
-        filename = uploaded_file.name
-
-        # remove space in filename if exists
-        if " " in filename:
-            filename = uploaded_file.name.replace(" ", "")
-
-        if filename in files:
-            context['result'] = -1
-            return render(request, 'upload.html', context)
-
-        name = fs.save(filename, uploaded_file)
-
         year = int(request.POST['year'])
-        process_file(name, year)
+
+        # handling File input
+        if request.FILES:
+            print("Processing File...")
+            fs = FileSystemStorage()
+            uploaded_file = request.FILES['document']
+            files = os.listdir('media')
+            filename = uploaded_file.name
+
+            # remove space in filename if exists
+            if " " in filename:
+                filename = uploaded_file.name.replace(" ", "")
+
+            if filename in files:
+                context['result'] = -1
+                return render(request, 'upload.html', context)
+
+            name = fs.save(filename, uploaded_file)
+
+            parsed = parser.from_file('./media/' + filename)  # read the file
+            process_file(parsed["content"], year)
+
+        if request.POST["txt_input"]:
+            print("Processing text input...")
+            txt = request.POST["txt_input"]
+            process_file(txt, year)
+
         context['result'] = 1
     return render(request, 'upload.html', context)
 
 
-def process_file(filename, year):
+def process_file(text, year):
     # reg_exp_date = re.compile(r'([12]\d{3}\.(0[1-9]|1[0-2])\.(0[1-9]|[12]\d|3[01]))')
     # year = 0
     # if reg_exp_date.search(filename):
     #     year = int(reg_exp_date.search(filename).group().split('.')[0])
 
-    parsed = parser.from_file('./media/' + filename)  # read the file
-
     print("1. Saving words...")
-    save_words(pre_process(parsed["content"]), year)
+    save_words(pre_process(text), year)
 
     print("2. Saving N-grams...")
-    save_n_grams(pre_process(parsed["content"]), year, 2)
+    save_n_grams(pre_process(text), year, 3)
 
     # konlpy_module(parsed["content"], year)
     # word2vec_function(parsed["content"].replace('\n', ' '))
@@ -295,8 +303,9 @@ def save_words(corpus, year):
             new_word.count += 1
             new_word.save()
 
-    print("1-2. Saving embeddings for words based on similarities...")
-    save_similarities(words_array)
+    # TODO: do following after all words and collocations are uploaded
+    # print("1-2. Saving embeddings for words based on similarities...")
+    # save_similarities(words_array)
 
 
 def save_n_grams(corpus, year, n):
@@ -327,8 +336,9 @@ def save_n_grams(corpus, year, n):
             new_ngram.count += 1
             new_ngram.save()
 
-    print("2-2. Saving embeddings for n-grams based on similarities...")
-    save_similarities(collocations_data)
+    # TODO: do following after all words and collocations are uploaded
+    # print("2-2. Saving embeddings for n-grams based on similarities...")
+    # save_similarities(collocations_data)
 
 
 def save_similarities(tokens):
@@ -395,6 +405,7 @@ def pre_process(corpus):
             stopset.append(line[:-1])
 
     corpus = " ".join([i for i in nltk.regexp_tokenize(corpus, '\\w+') if i not in stopset])
+    print(corpus)
     return corpus
 
 

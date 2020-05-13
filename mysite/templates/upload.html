@@ -5,6 +5,10 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <input type="file" name="document">
+        <label style="display: block" for="text-input">Text input:</label>
+        <textarea id="text-input" rows="4" cols="50" name="txt_input"></textarea>
+        <br>
+        <br>
         <label for="filter-year">Upload year: </label>
         <select id="filter-year" name="year">
             <option value="2010">2010</option>
@@ -24,7 +28,7 @@
             <option value="2024">2024</option>
             <option value="2025">2025</option>
         </select>
-        <button type="submit" id="btn_submit" onClick="submit_click()">Upload file</button>
+        <button style="display: block" type="submit" id="btn_submit" onClick="submit_click()">Upload</button>
         <br>
         <p id="done">Done!!!</p>
         <script>
@@ -44,7 +48,7 @@
         {% if result == 1 %}
             <script> document.getElementById("done").style.display = "block"; </script>
         {% elif result == 0 %}
-            <script>alert("Please, choose the file first!");</script>
+            <script>alert("Please, choose the file or input the text first!");</script>
         {% elif result == -1 %}
             <script>alert("This file has already been uploaded!");</script>
         {% endif %}
