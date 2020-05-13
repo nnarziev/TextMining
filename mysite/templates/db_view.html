@@ -12,8 +12,11 @@
         {% include 'filters/filter.html' %}
         {% include 'filters/text_type_filter.html' %}
         <button type="submit" id="apply-filter-btn">Apply</button>
+        <br>
+        <br>
         <table id="db_table">
             <tr>
+                <th>No.</th>
                 <th>Word</th>
                 <th>Counter</th>
                 <th>Year</th>
@@ -21,6 +24,7 @@
             </tr>
             {% for word in words %}
                 <tr>
+                    <td>{{ forloop.counter }}</td>
                     <td>{{ word.text }}</td>
                     <td>{{ word.count }}</td>
                     <td>{{ word.year }}</td>

@@ -52,12 +52,14 @@
                 </script>
                 <table id="db_table">
                     <tr>
+                        <th>No.</th>
                         <th>Text</th>
                         <th>Topic</th>
                         <th>Year</th>
                     </tr>
                     {% for topic_data in topics_data %}
                         <tr>
+                            <td>{{ forloop.counter }}</td>
                             <td>{{ topic_data.text }}</td>
                             <td>{{ topic_data.topic }}</td>
                             <td>{{ topic_data.year }}</td>

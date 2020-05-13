@@ -45,7 +45,7 @@ def db_view(request):
         year = request.POST['year']
         text_type = request.POST['text_type']
 
-        print(unwanted_words)
+        print("Unwanted words: {}".format(unwanted_words))
         if unwanted_words:
             set_unwanted_words(unwanted_words, text_type)
 
@@ -285,7 +285,10 @@ def process_file(text, year):
     print("1. Saving words...")
     save_words(pre_process(text), year)
 
-    print("2. Saving N-grams...")
+    print("2. Saving 2-grams...")
+    save_n_grams(pre_process(text), year, 2)
+
+    print("2. Saving 3-grams...")
     save_n_grams(pre_process(text), year, 3)
 
     # konlpy_module(parsed["content"], year)
@@ -321,7 +324,7 @@ def save_n_grams(corpus, year, n):
         n_gram_finder = nltk.collocations.TrigramCollocationFinder.from_words(tokens)
 
     # apply filters to finder
-    n_gram_finder.apply_freq_filter(3)
+    n_gram_finder.apply_freq_filter(2)
 
     ngrams = n_gram_finder.nbest(n_gram_measures.pmi, 50)  # find top 50 collocations from words
 
@@ -398,13 +401,22 @@ def ClusterIndicesNumpy(clustNum, labels_array):  # numpy
 
 def pre_process(corpus):
     corpus = corpus.lower()
-    stopset = []
+    stop_words_set = []
+    stop_collocations_set = []
     with open("stopwords_ko.txt", 'r', encoding="UTF-8") as f:
         lines = f.readlines()
         for line in lines:
-            stopset.append(line[:-1])
+            if line.split(" ").__len__() > 1:
+                stop_collocations_set.append(line[:-1])
+            else:
+                stop_words_set.append(line[:-1])
 
-    corpus = " ".join([i for i in nltk.regexp_tokenize(corpus, '\\w+') if i not in stopset])
+    corpus = " ".join([i for i in nltk.regexp_tokenize(corpus, '\\w+') if i not in stop_words_set])
+
+    for col in stop_collocations_set:
+        if col in corpus:
+            corpus = re.sub(col + " ", '', corpus)
+
     print(corpus)
     return corpus
 
