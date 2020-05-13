@@ -446,6 +446,21 @@ def plot_similarity():
 
     plt.savefig("plot.png", dpi=1000)
 
+
+# web crawl to download the file and input text
+def web_crawl(url):
+    import urllib
+    import bs4
+
+    base_url = "http://www.ricee.or.kr/Sys/RICEE/CAPS/"
+
+    #TODO: make a post request by
+
+    response = urllib.request.urlopen(url)
+    html = response.read()
+    soup_insurance = bs4.BeautifulSoup(html, 'html.parser')
+
+
 # def konlpy_module(doc, year):
 #     measures = nltk.collocations.BigramAssocMeasures()
 #     tagged_words = Kkma().sentences(doc)  # only extracts korean nouns
