@@ -246,26 +246,28 @@ def upload(request):
 
         year = int(request.POST['year'])
 
-        # handling File input
+        # handling Files input
         if request.FILES:
             print("Processing File...")
             fs = FileSystemStorage()
-            uploaded_file = request.FILES['document']
-            files = os.listdir('media')
-            filename = uploaded_file.name
+            for uploaded_file in request.FILES.getlist('documents'):
+                files = os.listdir('media')
+                filename = uploaded_file.name
+                print("Filename: " + filename)
 
-            # remove space in filename if exists
-            if " " in filename:
-                filename = uploaded_file.name.replace(" ", "")
+                # remove space in filename if exists
+                if " " in filename:
+                    filename = uploaded_file.name.replace(" ", "")
 
-            if filename in files:
-                context['result'] = -1
-                return render(request, 'upload.html', context)
+                if filename in files:
+                    context['result'] = -1
+                    context['filename'] = filename
+                    return render(request, 'upload.html', context)
 
-            name = fs.save(filename, uploaded_file)
+                name = fs.save(filename, uploaded_file)
 
-            parsed = parser.from_file('./media/' + filename)  # read the file
-            process_file(parsed["content"], year)
+                parsed = parser.from_file('./media/' + filename)  # read the file
+                process_file(parsed["content"], year)
 
         if request.POST["txt_input"]:
             print("Processing text input...")
