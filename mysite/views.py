@@ -29,10 +29,10 @@ from konlpy.tag import Kkma
 # Create your views here.
 from mysite.models import Words, Collocations, Embeddings
 
-
 RESULT_SUCCESS = 1
 RESULT_FAIL = -1
 RESULT_ERROR = 0
+
 
 class Home(TemplateView):
     template_name = "home.html"
@@ -312,7 +312,8 @@ def process_file(text, year):
 
 def save_words(corpus, year):
     words_array = re.findall('\\w+', corpus.replace('\n', ''))  # take all the words using regular expression
-    for word_item in words_array:
+
+    for word_item in words_array[1:]:  # just get rid of the first word since it's some garbage value
         new_word, created = Words.objects.get_or_create(text=word_item, year=year)
         if created:
             new_word.count = 1
@@ -431,8 +432,6 @@ def pre_process(corpus):
     for col in stop_collocations_set:
         if col in corpus:
             corpus = re.sub(col + " ", '', corpus)
-
-    print(corpus)
     return corpus
 
 
@@ -460,20 +459,6 @@ def plot_similarity():
         plt.annotate(word, xy=(result[i, 0], result[i, 1]))
 
     plt.savefig("plot.png", dpi=1000)
-
-
-# web crawl to download the file and input text
-def web_crawl(url):
-    import urllib
-    import bs4
-
-    base_url = "http://www.ricee.or.kr/Sys/RICEE/CAPS/"
-
-    # TODO: make a post request by
-
-    response = urllib.request.urlopen(url)
-    html = response.read()
-    soup_insurance = bs4.BeautifulSoup(html, 'html.parser')
 
 # def konlpy_module(doc, year):
 #     measures = nltk.collocations.BigramAssocMeasures()
