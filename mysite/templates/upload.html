@@ -47,6 +47,10 @@
         </script>
         {% if result == 1 %}
             <script> document.getElementById("done").style.display = "block"; </script>
+            <p>Files with no text inside:</p>
+            {% for file in no_text_files %}
+                <p>{{ file }}</p>
+            {% endfor %}
         {% elif result == 0 %}
             <script>alert("Please, choose the file or input the text first!");</script>
         {% elif result == -1 %}

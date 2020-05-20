@@ -30,6 +30,10 @@ from konlpy.tag import Kkma
 from mysite.models import Words, Collocations, Embeddings
 
 
+RESULT_SUCCESS = 1
+RESULT_FAIL = -1
+RESULT_ERROR = 0
+
 class Home(TemplateView):
     template_name = "home.html"
 
@@ -59,7 +63,7 @@ def db_view(request):
 
         context = {}
         context['words'] = data
-        context['result'] = 1
+        context['result'] = RESULT_SUCCESS
         return render(request, 'db_view.html', context)
 
 
@@ -241,7 +245,7 @@ def upload(request):
     context = {}
     if request.method == 'POST':
         if not request.FILES and not request.POST["txt_input"]:
-            context['result'] = 0
+            context['result'] = RESULT_ERROR
             return render(request, 'upload.html', context)
 
         year = int(request.POST['year'])
@@ -250,7 +254,7 @@ def upload(request):
         if request.FILES:
             print("Processing File...")
             fs = FileSystemStorage()
-            no_str_content_cnt = 0
+            files_withno_text = []
             for uploaded_file in request.FILES.getlist('documents'):
                 files = os.listdir('media')
                 filename = uploaded_file.name
@@ -261,7 +265,7 @@ def upload(request):
                     filename = uploaded_file.name.replace(" ", "")
 
                 if filename in files:
-                    context['result'] = -1
+                    context['result'] = RESULT_FAIL
                     context['filename'] = filename
                     return render(request, 'upload.html', context)
 
@@ -273,17 +277,17 @@ def upload(request):
                 if isinstance(parsed["content"], str):
                     process_file(parsed["content"], year)
                 else:
-                    no_str_content_cnt += 1
+                    files_withno_text.append(filename)
                     continue
-
-            print("Files with no-string content: " + no_str_content_cnt)
+            context['no_text_files'] = files_withno_text
+            print("Files with no-string content: {}".format(files_withno_text))
 
         if request.POST["txt_input"]:
             print("Processing text input...")
             txt = request.POST["txt_input"]
             process_file(txt, year)
 
-        context['result'] = 1
+        context['result'] = RESULT_SUCCESS
     return render(request, 'upload.html', context)
 
 
