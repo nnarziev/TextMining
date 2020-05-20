@@ -6,7 +6,9 @@
         {% csrf_token %}
         <input id="files" type="file" name="documents" multiple>
         <label style="display: block" for="text-input">Text input:</label>
-        <textarea id="text-input" rows="4" cols="50" name="txt_input"></textarea>
+        <textarea id="text-input" rows="4" cols="70" name="txt_input"></textarea>
+        <label style="display: block" for="text-input">Keywords input <b>(separated by ",")</b>:</label>
+        <textarea id="text-input" rows="4" cols="70" name="keywords_input"></textarea>
         <br>
         <br>
         <label for="filter-year">Upload year: </label>

@@ -81,6 +81,7 @@ def set_unwanted_words(words, text_type):
 
 def visualize(request):
     if request.method == 'GET':
+        extract_similarities_for_each_text()
         return render(request, 'visualization.html')
     if request.method == 'POST':
         if not request.POST:
@@ -244,7 +245,7 @@ def get_collocations_chart_data(top5_collocations_for_sel_year, year_start, year
 def upload(request):
     context = {}
     if request.method == 'POST':
-        if not request.FILES and not request.POST["txt_input"]:
+        if not request.FILES and not request.POST["txt_input"] and not request.POST["keywords_input"]:
             context['result'] = RESULT_ERROR
             return render(request, 'upload.html', context)
 
@@ -275,23 +276,52 @@ def upload(request):
 
                 # check if the extracted content from file is string type. If not just skip this file
                 if isinstance(parsed["content"], str):
-                    process_file(parsed["content"], year)
+                    process_text(parsed["content"], year)
                 else:
                     files_withno_text.append(filename)
                     continue
             context['no_text_files'] = files_withno_text
             print("Files with no-string content: {}".format(files_withno_text))
 
+        # handling Text input
         if request.POST["txt_input"]:
             print("Processing text input...")
             txt = request.POST["txt_input"]
-            process_file(txt, year)
+            process_text(txt, year)
+
+        # handling Keywords input
+        if request.POST["keywords_input"]:
+            print("Processing keywords input...")
+            txt = request.POST["keywords_input"]
+            process_keywords(txt, year)
 
         context['result'] = RESULT_SUCCESS
     return render(request, 'upload.html', context)
 
 
-def process_file(text, year):
+def process_keywords(text, year):
+    txt_array = text.split(",")
+    for item in txt_array:
+        if len(item.split()) > 1:  # save as a collocation
+            new_ngram, created = Collocations.objects.get_or_create(text=item, year=year)
+            if created:
+                new_ngram.count = 1
+                new_ngram.save()
+            else:
+                new_ngram.count += 1
+                new_ngram.save()
+
+        else:  # save as a word
+            new_word, created = Words.objects.get_or_create(text=item, year=year)
+            if created:
+                new_word.count = 1
+                new_word.save()
+            else:
+                new_word.count += 1
+                new_word.save()
+
+
+def process_text(text, year):
     # reg_exp_date = re.compile(r'([12]\d{3}\.(0[1-9]|1[0-2])\.(0[1-9]|[12]\d|3[01]))')
     # year = 0
     # if reg_exp_date.search(filename):
@@ -397,7 +427,7 @@ def kmeans_clustering(texts, num_of_topic):
             np_bytes = base64.b64decode(vector[0].embedding)
             embeddings.append(pickle.loads(np_bytes))
         # else:
-            # print("No data: " + text.text)
+        # print("No data: " + text.text)
 
     clustering = KMeans(n_clusters=num_of_topic)
     if not embeddings.__len__() == 0:
@@ -459,6 +489,18 @@ def plot_similarity():
         plt.annotate(word, xy=(result[i, 0], result[i, 1]))
 
     plt.savefig("plot.png", dpi=1000)
+
+
+def extract_similarities_for_each_text():
+    word_data = list(Words.objects.values_list("text", flat=True))
+    save_similarities(word_data)
+
+    print("Word data processing is Done!!!")
+
+    collocation_data = list(Collocations.objects.values_list("text", flat=True))
+    save_similarities(collocation_data)
+
+    print("Collocation data processing is Done!!!")
 
 # def konlpy_module(doc, year):
 #     measures = nltk.collocations.BigramAssocMeasures()
