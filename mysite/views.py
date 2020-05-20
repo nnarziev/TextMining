@@ -47,6 +47,7 @@ def db_view(request):
 
         unwanted_words = request.POST.getlist('checks[]')
         year = request.POST['year']
+        top_count = int(request.POST['top_count'])
         text_type = request.POST['text_type']
 
         print("Unwanted words: {}".format(unwanted_words))
@@ -54,9 +55,9 @@ def db_view(request):
             set_unwanted_words(unwanted_words, text_type)
 
         if text_type == 'words':
-            data = Words.objects.all().filter(year=year).order_by('-count').values('text', 'count', 'year')
+            data = Words.objects.all().filter(year=year).order_by('-count').values('text', 'count', 'year')[:top_count]
         else:
-            data = Collocations.objects.all().filter(year=year).order_by('-count').values('text', 'count', 'year')
+            data = Collocations.objects.all().filter(year=year).order_by('-count').values('text', 'count', 'year')[:top_count]
 
         if data.__len__() == 0:
             return render(request, 'no_data.html')
@@ -132,7 +133,6 @@ def visualize(request):
 
         # endregion
 
-        print("here")
         # region Prepare data for topic
         if text_type == 'words':
             data = Words.objects.filter(year=year)
@@ -144,7 +144,7 @@ def visualize(request):
             context['is_topics_data_exits'] = 1
         # endregion
 
-        context['result'] = 1
+        context['result'] = RESULT_SUCCESS
         return render(request, 'visualization.html', context)
 
 
@@ -396,8 +396,8 @@ def kmeans_clustering(texts, num_of_topic):
             years.append(text.year)
             np_bytes = base64.b64decode(vector[0].embedding)
             embeddings.append(pickle.loads(np_bytes))
-        else:
-            print("No data: " + text.text)
+        # else:
+            # print("No data: " + text.text)
 
     clustering = KMeans(n_clusters=num_of_topic)
     if not embeddings.__len__() == 0:
