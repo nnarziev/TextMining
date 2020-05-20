@@ -250,6 +250,7 @@ def upload(request):
         if request.FILES:
             print("Processing File...")
             fs = FileSystemStorage()
+            no_str_content_cnt = 0
             for uploaded_file in request.FILES.getlist('documents'):
                 files = os.listdir('media')
                 filename = uploaded_file.name
@@ -267,7 +268,15 @@ def upload(request):
                 name = fs.save(filename, uploaded_file)
 
                 parsed = parser.from_file('./media/' + filename)  # read the file
-                process_file(parsed["content"], year)
+
+                # check if the extracted content from file is string type. If not just skip this file
+                if isinstance(parsed["content"], str):
+                    process_file(parsed["content"], year)
+                else:
+                    no_str_content_cnt += 1
+                    continue
+
+            print("Files with no-string content: " + no_str_content_cnt)
 
         if request.POST["txt_input"]:
             print("Processing text input...")
@@ -456,12 +465,11 @@ def web_crawl(url):
 
     base_url = "http://www.ricee.or.kr/Sys/RICEE/CAPS/"
 
-    #TODO: make a post request by
+    # TODO: make a post request by
 
     response = urllib.request.urlopen(url)
     html = response.read()
     soup_insurance = bs4.BeautifulSoup(html, 'html.parser')
-
 
 # def konlpy_module(doc, year):
 #     measures = nltk.collocations.BigramAssocMeasures()
