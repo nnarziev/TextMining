@@ -21,5 +21,5 @@ class Collocations(models.Model):
 
 
 class Embeddings(models.Model):
-    text = models.CharField(max_length=50, primary_key=True)
+    text = models.TextField(primary_key=True)
     embedding = models.BinaryField()
