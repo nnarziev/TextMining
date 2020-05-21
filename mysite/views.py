@@ -81,13 +81,14 @@ def set_unwanted_words(words, text_type):
 
 def visualize(request):
     if request.method == 'GET':
-        extract_similarities_for_each_text()
+        # extract_similarities_for_each_text()
         return render(request, 'visualization.html')
     if request.method == 'POST':
         if not request.POST:
             return render(request, 'visualization.html')
 
         year = request.POST['year']
+        top_count = int(request.POST['top_count'])
         text_type = request.POST['text_type']
         topic_num = int(request.POST['topic_num'])
         wc_dir = 'media/tmp_wordcloud'
@@ -136,9 +137,9 @@ def visualize(request):
 
         # region Prepare data for topic
         if text_type == 'words':
-            data = Words.objects.filter(year=year)
+            data = Words.objects.all().filter(year=year).order_by('-count')[:top_count]
         else:
-            data = Collocations.objects.filter(year=year)
+            data = Words.objects.all().filter(year=year).order_by('-count')[:top_count]
 
         if not data.__len__() == 0:
             context['topics_data'] = kmeans_clustering(data, topic_num)['topics_data']

@@ -6,8 +6,14 @@
     <form method="post" enctype="multipart/form-data" id="myForm">
         {% include 'filters/filter.html' %}
         {% include 'filters/chart_period_filter.html' %}
-        {% include 'filters/topic_number_filter.html' %}
-        {% include 'filters/text_type_filter.html' %}
+        <p>Topic modeling filters:</p>
+        <div style="border: 1px solid #000000; margin-top: -20px; padding: 10px; width: 50%">
+            {% include 'filters/topic_number_filter.html' %}
+            {% include 'filters/text_type_filter.html' %}
+            <label for="quantity">Top words/collocations count: </label>
+            <input required type="number" id="quantity" name="top_count" min="1" max="5000">
+        </div>
+        <br>
         <button type="submit" id="apply-filter-btn">Apply</button>
         <br>
         <div class="chart-container">
