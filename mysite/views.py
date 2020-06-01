@@ -139,7 +139,7 @@ def visualize(request):
         if text_type == 'words':
             data = Words.objects.all().filter(year=year).order_by('-count')[:top_count]
         else:
-            data = Words.objects.all().filter(year=year).order_by('-count')[:top_count]
+            data = Collocations.objects.all().filter(year=year).order_by('-count')[:top_count]
 
         if not data.__len__() == 0:
             context['topics_data'] = kmeans_clustering(data, topic_num)['topics_data']
@@ -185,7 +185,8 @@ def get_words_chart_data(top5_words_for_sel_year, year_start, year_end):
                     cnt = 0
             else:
                 # final_data.append({"text": w[counter_words].text, "year": counter_year, "count": 0})
-                txt = w[counter_words - 1].text
+                if counter_words >0:
+                    txt = w[counter_words - 1].text
                 yr = counter_year
                 cnt = 0
 
@@ -435,7 +436,7 @@ def kmeans_clustering(texts, num_of_topic):
         clustering.fit(embeddings)
         for i in range(0, num_of_topic):
             n_cluster_data = ClusterIndicesNumpy(clustNum=i, labels_array=clustering.labels_)
-            print("***** Cluster {} *******".format(i))
+            # print("***** Cluster {} *******".format(i))
             for n in n_cluster_data:
                 result['topics_data'].append({"topic": str(i + 1), "text": words[n], "year": years[n]})
 
