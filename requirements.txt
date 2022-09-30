@@ -13,7 +13,7 @@ filelock==3.0.12
 future==0.18.2
 idna==2.9
 jmespath==0.9.5
-joblib==0.14.1
+joblib==1.2.0
 JPype1==0.7.3
 kiwisolver==1.2.0
 kobert-transformers==0.3.0
